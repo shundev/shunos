@@ -6,6 +6,24 @@ void io_store_eflags(int eflags);
 
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
+void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
+
+#define COL8_000000		0
+#define COL8_FF0000		1
+#define COL8_00FF00		2
+#define COL8_FFFF00		3
+#define COL8_0000FF		4
+#define COL8_FF00FF		5
+#define COL8_00FFFF		6
+#define COL8_FFFFFF		7
+#define COL8_C6C6C6		8
+#define COL8_840000		9
+#define COL8_008400		10
+#define COL8_848400		11
+#define COL8_000084		12
+#define COL8_840084		13
+#define COL8_008484		14
+#define COL8_848484		15
 
 void HariMain(void)
 {
@@ -16,10 +34,9 @@ void HariMain(void)
 
     p = (char *) 0xa0000;
 
-    for (i = 0; i <= 0xffff; i++)
-    {
-        p[i] = i & 0x0f;
-    }
+    boxfill8(p, 320, COL8_FFFF00, 10, 10, 310, 190);
+    boxfill8(p, 320, COL8_FFFFFF, 30, 30, 290, 170);
+    boxfill8(p, 320, COL8_00FFFF, 50, 50, 270, 150);
 
     for (;;) {
         io_hlt();
@@ -59,12 +76,28 @@ void set_palette(int start, int end, unsigned char *rgb)
 
     for (i = start; i <= end; i++)
     {
-        io_out8(0x03c9, rgb[0] / 4);
-        io_out8(0x03c9, rgb[1] / 4);
-        io_out8(0x03c9, rgb[2] / 4);
+        io_out8(0x03c9, rgb[0]);
+        io_out8(0x03c9, rgb[1]);
+        io_out8(0x03c9, rgb[2]);
         rgb += 3;
     }
 
     io_store_eflags(eflags);
     return;
+}
+
+void boxfill8(
+    unsigned char *vram,
+    int xsize,
+    unsigned char c,
+    int x0, int y0, int x1, int y1)
+{
+    int x, y;
+    for (y = y0; y <= y1; y++)
+    {
+        for (x = x0; x <= x1; x++)
+        {
+            vram[y * xsize + x] = c;
+        }
+    }
 }
